@@ -26,13 +26,12 @@ class FetchGoogleSheetComments extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle():void
     {
         $count = $this->argument('count') ? (int)$this->argument('count') : null;
         $comments = (new FetchGoogleSheetCommentsAction())->execute($count);
         if (empty($comments)) {
             $this->info('Нет данных в Google Sheet.');
-            return 0;
         }
         $total = count($comments);
         $bar = $this->output->createProgressBar($total);
@@ -45,6 +44,5 @@ class FetchGoogleSheetComments extends Command
         $bar->finish();
 
         $this->info('Готово.');
-        return 0;
     }
 }

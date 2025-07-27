@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\DTO\GoogleSheetSyncDto;
 use App\Models\Setting;
+use Google_Service_Sheets;
 
 class SyncGoogleSheetAction
 {
@@ -34,17 +35,17 @@ class SyncGoogleSheetAction
         return true;
     }
 
-    private function getSheetService(): \Google_Service_Sheets
+    private function getSheetService(): Google_Service_Sheets
     {
         $client = new \Google_Client();
         $client->setApplicationName('Laravel Google Table Sync');
-        $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
+        $client->setScopes([Google_Service_Sheets::SPREADSHEETS]);
         $client->setAuthConfig(storage_path('app/google/credentials.json'));
         $client->setAccessType('offline');
-        return new \Google_Service_Sheets($client);
+        return new Google_Service_Sheets($client);
     }
 
-    private function getSheetIdFromUrl($url)
+    private function getSheetIdFromUrl(string $url): ?string
     {
         if (preg_match('/\/d\/([a-zA-Z0-9-_]+)/', $url, $matches)) {
             return $matches[1];
@@ -52,7 +53,8 @@ class SyncGoogleSheetAction
         return null;
     }
 
-    private function writeRows($service, $spreadsheetId, $range, $values)
+
+    private function writeRows(\Google_Service_Sheets $service, string $spreadsheetId, string $range, array $values): mixed
     {
         $body = new \Google_Service_Sheets_ValueRange([
             'values' => $values
@@ -61,8 +63,9 @@ class SyncGoogleSheetAction
         return $service->spreadsheets_values->update($spreadsheetId, $range, $body, $params);
     }
 
-    private function clearRange($service, $spreadsheetId, $range)
+
+    private function clearRange(\Google_Service_Sheets $service, string $spreadsheetId, string $range): void
     {
         $service->spreadsheets_values->clear($spreadsheetId, $range, new \Google_Service_Sheets_ClearValuesRequest());
     }
-} 
+}

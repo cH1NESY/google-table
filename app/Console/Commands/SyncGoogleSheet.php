@@ -28,7 +28,7 @@ class SyncGoogleSheet extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle():void
     {
         Log::info('Scheduler sync run at ' . now());
         $this->info('Синхронизация с Google Sheet...');

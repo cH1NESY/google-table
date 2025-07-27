@@ -8,6 +8,7 @@ use App\Models\Setting;
 class FetchGoogleSheetCommentsAction
 {
     /**
+     * @param int|null $count
      * @return GoogleSheetCommentDto[]
      */
     public function execute(int $count = null): array
@@ -39,7 +40,7 @@ class FetchGoogleSheetCommentsAction
         return new \Google_Service_Sheets($client);
     }
 
-    private function getSheetIdFromUrl($url)
+    private function getSheetIdFromUrl(string $url): ?string
     {
         if (preg_match('/\/d\/([a-zA-Z0-9-_]+)/', $url, $matches)) {
             return $matches[1];
@@ -47,7 +48,12 @@ class FetchGoogleSheetCommentsAction
         return null;
     }
 
-    private function getRows($spreadsheetId, $range)
+    /**
+     * @param string $spreadsheetId
+     * @param string $range
+     * @return array<int, array<int, mixed>>
+     */
+    private function getRows(string $spreadsheetId, string $range): array
     {
         $service = $this->getSheetService();
         $response = $service->spreadsheets_values->get($spreadsheetId, $range);
