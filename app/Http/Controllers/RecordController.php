@@ -41,10 +41,10 @@ class RecordController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRecordRequest $request)
+    public function store(StoreRecordRequest $request, CreateRecordAction $createRecordAction)
     {
         $dto = new RecordDto($request->validated());
-        (new CreateRecordAction())->execute($dto);
+        $createRecordAction->execute($dto);
         return redirect()->route('records.index')->with('success', 'Запись добавлена');
     }
 
@@ -62,42 +62,42 @@ class RecordController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRecordRequest $request, $id)
+    public function update(UpdateRecordRequest $request, $id, UpdateRecordAction $updateRecordAction)
     {
         $record = Record::findOrFail($id);
         $dto = new RecordDto($request->validated());
-        (new UpdateRecordAction())->execute($record, $dto);
+        $updateRecordAction->execute($record, $dto);
         return redirect()->route('records.index')->with('success', 'Запись обновлена');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy($id, DeleteRecordAction $deleteRecordAction)
     {
         $record = Record::findOrFail($id);
-        (new DeleteRecordAction())->execute($record);
+        $deleteRecordAction->execute($record);
         return redirect()->route('records.index')->with('success', 'Запись удалена');
     }
 
     // Генерация 1000 строк
-    public function generate()
+    public function generate(GenerateRecordsAction $generateRecordsAction)
     {
-        (new GenerateRecordsAction())->execute();
+        $generateRecordsAction->execute();
         return redirect()->route('records.index')->with('success', '1000 строк сгенерировано');
     }
 
     // Очистка таблицы
-    public function clear()
+    public function clear(ClearRecordsAction $clearRecordsAction)
     {
-        (new ClearRecordsAction())->execute();
+        $clearRecordsAction->execute();
         return redirect()->route('records.index')->with('success', 'Таблица очищена');
     }
 
-    public function setSheetUrl(SetGoogleSheetUrlRequest $request)
+    public function setSheetUrl(SetGoogleSheetUrlRequest $request, SetGoogleSheetUrlAction $setGoogleSheetUrlAction)
     {
         $dto = new GoogleSheetUrlDto($request->input('sheet_url'));
-        (new SetGoogleSheetUrlAction())->execute($dto);
+        $setGoogleSheetUrlAction->execute($dto);
         return redirect()->route('records.index')->with('success', 'URL Google Sheet сохранён');
     }
 }

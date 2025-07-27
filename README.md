@@ -1,61 +1,124 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Google-table
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Описание
 
-## About Laravel
+Проект реализует сервис, который решает задачу синхронизации данных из БД с Google Таблицей
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Сущность "Записи" имеет следующие поля:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- id
+- Текст
+- Статус
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Сущность "Настройки" имеет следующие поля:
 
-## Learning Laravel
+- id
+- Ключ
+- Значение
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Что было реализовано:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **CRUD интерфейс для 1 модели**:
+    - Генерирование 1000 строк
+    - Очистка таблицы
+    - Удаление записи
+    - Создание записи
+    - Добавление ссылки на google-таблицу
+    - Пагинация
 
-## Laravel Sponsors
+- **Выгрузка данных в google-таблицу**:
+    - Отправка записей только со статусом allowed
+    - Комментарии
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Docker контейнеризация**:
+    - Использование Docker для развертывания приложения и базы данных.
 
-### Premium Partners
+- **Шэдулер для автоматической выгрузки/обновления данных**
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Консольная команда**
+    - Получение данных из google таблицы
+    - Ограничение по количеству получаемых данных
 
-## Contributing
+    
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Что было реализовано:
 
-## Code of Conduct
+- **ClearRecordsAction** - Action для очистки записей.
+- **CreateRecordAction** — Action для создания записи в бд.
+- **DeleteRecordAction** — Action для удаления записи.
+- **FetchGoogleSheetCommentsAction** - Action для получения комментариев из Google таблицы.
+- **GenerateRecordsAction** - Action для генерации записей.
+- **SetGoogleSheetUrlAction** — Action для сохранения или обновления URL Google таблицы.
+- **SyncGoogleSheetAction** — Action для синхронизации данных с Google таблицей.
+- **UpdateRecordAction** — Action для обновления записи.
+- **FetchGoogleSheetComments** — Команда для получения и вывода комментариев из Google таблицы в терминал.
+- **SyncGoogleSheet** — Команда для синхронизации данных с Google таблицей.
+- **GoogleSheetCommentDto** - Данные о комментариях.
+- **GoogleSheetSyncDto** - Данные для синхронизации вашей базы данных с Google таблицей.
+- **GoogleSheetUrlDto** - Данные об url.
+- **RecordDto** - Запись.
+- **RecordController** - Контроллер для обработки запросов записей.
+- **SetGoogleSheetUrlRequest** - Валидация url.
+- **StoreRecordRequest** - Валидация новой записи.
+- **UpdateRecordRequest** - Валидация обновления записи.
+- **Record** - Модель для работы с данными записи.
+- **Setting** - Модель для работы с url.
+- **2025_07_23_190926_create_records_table** - Миграция для создания таблицы записей.
+- **2025_07_23_191901_create_settings_table** - Миграция для создания таблицы настроек (url).
+- **app.blade.php** - Базовая форма для всех страниц.
+- **create.blade.php** - Форма создания записи.
+- **edit.blade.php** - Форма редактирования записи.
+- **index.blade.php** - Список всех записей и основные действия.
+- **web** - роуты.
+- **Dockerfile** — Конфигурация для создания контейнера Docker.
+- **docker-compose.yml** — Настройки для запуска контейнеров с помощью Docker Compose.
+- **.env** — Файл с переменными окружения для настройки конфигураций.
+- **README.md** — Описание проекта, инструкция по установке и запуску.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
+## Инструкция по запуску
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Клонирование репозитория
+git clone git@github.com:cH1NESY/google-table.git
+cd google-table
 
-## License
+2. Запуск контейнеров
+docker-compose up -d --build
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+3. Установите связь с бд
+Database->"+"->Data Source->MySQL.
+ввод пользователя, пароля, порта и названия бд:
+DB_PORT=3307
+DB_DATABASE=laravel
+DB_USERNAME=user
+DB_PASSWORD=pass
+Test connection->Apply->Ok
+
+4. Выполнение миграции
+Вводим в терминал:
+docker exec -it php-fpm-google bash
+в контейнере запускаем миграцию:
+php artisan migrate
+
+5. Открываем страницу
+В браузере переходим по адресу http://localhost:94/records
+
+6. Запуск команд вручную
+Выгрузка в google-таблицу:
+В контейнере запускаем:
+php artisan app:sync-google-sheet
+
+Вытянуть из google-таблицы:
+В контейнере запускаем:
+php artisan app:sync-google-sheet
+
+## Страница приложения
+![img.png](img.png)
+
+## Добавление записи
+![img_1.png](img_1.png)
+
+## Google-таблица
+![img_2.png](img_2.png)
+# Google-table

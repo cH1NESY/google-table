@@ -7,6 +7,13 @@ use App\Models\Setting;
 
 class FetchGoogleSheetCommentsAction
 {
+    private \Google_Client $client;
+
+    public function __construct()
+    {
+        $this->client = new \Google_Client();
+    }
+
     /**
      * @param int|null $count
      * @return GoogleSheetCommentDto[]
@@ -14,16 +21,28 @@ class FetchGoogleSheetCommentsAction
     public function execute(int $count = null): array
     {
         $sheetUrl = Setting::where('key', 'google_sheet_url')->value('value');
-        if (!$sheetUrl) return [];
+        if ($sheetUrl === null || $sheetUrl === false || $sheetUrl === '') {
+            return [];
+        }
         $spreadsheetId = $this->getSheetIdFromUrl($sheetUrl);
         $range = 'A2:F';
         $rows = $this->getRows($spreadsheetId, $range);
         $result = [];
         $printed = 0;
         foreach ($rows as $row) {
-            if ($count && $printed >= $count) break;
-            $id = $row[0] ?? '';
-            $comment = $row[5] ?? '';
+            if ($count !== null && $count !== 0 && $printed >= $count) {
+                break;
+            }
+            if (array_key_exists(0, $row)) {
+                $id = $row[0];
+            } else {
+                $id = '';
+            }
+            if (array_key_exists(5, $row)) {
+                $comment = $row[5];
+            } else {
+                $comment = '';
+            }
             $result[] = new GoogleSheetCommentDto($id, $comment);
             $printed++;
         }
@@ -32,12 +51,11 @@ class FetchGoogleSheetCommentsAction
 
     private function getSheetService(): \Google_Service_Sheets
     {
-        $client = new \Google_Client();
-        $client->setApplicationName('Laravel Google Table Sync');
-        $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
-        $client->setAuthConfig(storage_path('app/google/credentials.json'));
-        $client->setAccessType('offline');
-        return new \Google_Service_Sheets($client);
+        $this->client->setApplicationName('Laravel Google Table Sync');
+        $this->client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
+        $this->client->setAuthConfig(storage_path('app/google/credentials.json'));
+        $this->client->setAccessType('offline');
+        return new \Google_Service_Sheets($this->client);
     }
 
     private function getSheetIdFromUrl(string $url): ?string
@@ -57,6 +75,10 @@ class FetchGoogleSheetCommentsAction
     {
         $service = $this->getSheetService();
         $response = $service->spreadsheets_values->get($spreadsheetId, $range);
-        return $response->getValues();
+        $values = $response->getValues();
+        if ($values === null) {
+            return [];
+        }
+        return $values;
     }
 } 

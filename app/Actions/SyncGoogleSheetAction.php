@@ -8,10 +8,19 @@ use Google_Service_Sheets;
 
 class SyncGoogleSheetAction
 {
+    private \Google_Client $client;
+
+    public function __construct()
+    {
+        $this->client = new \Google_Client();
+    }
+
     public function execute(GoogleSheetSyncDto $dto): bool
     {
         $sheetUrl = Setting::where('key', 'google_sheet_url')->value('value');
-        if (!$sheetUrl) return false;
+        if ($sheetUrl === null || $sheetUrl === false || $sheetUrl === '') {
+            return false;
+        }
         $spreadsheetId = $this->getSheetIdFromUrl($sheetUrl);
         $range = 'A1:Z';
         $service = $this->getSheetService();
@@ -37,12 +46,11 @@ class SyncGoogleSheetAction
 
     private function getSheetService(): Google_Service_Sheets
     {
-        $client = new \Google_Client();
-        $client->setApplicationName('Laravel Google Table Sync');
-        $client->setScopes([Google_Service_Sheets::SPREADSHEETS]);
-        $client->setAuthConfig(storage_path('app/google/credentials.json'));
-        $client->setAccessType('offline');
-        return new Google_Service_Sheets($client);
+        $this->client->setApplicationName('Laravel Google Table Sync');
+        $this->client->setScopes([Google_Service_Sheets::SPREADSHEETS]);
+        $this->client->setAuthConfig(storage_path('app/google/credentials.json'));
+        $this->client->setAccessType('offline');
+        return new Google_Service_Sheets($this->client);
     }
 
     private function getSheetIdFromUrl(string $url): ?string
@@ -62,7 +70,6 @@ class SyncGoogleSheetAction
         $params = ['valueInputOption' => 'RAW'];
         return $service->spreadsheets_values->update($spreadsheetId, $range, $body, $params);
     }
-
 
     private function clearRange(\Google_Service_Sheets $service, string $spreadsheetId, string $range): void
     {
