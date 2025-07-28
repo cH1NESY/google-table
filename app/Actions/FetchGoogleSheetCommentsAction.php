@@ -4,14 +4,21 @@ namespace App\Actions;
 
 use App\DTO\GoogleSheetCommentDto;
 use App\Models\Setting;
+use Google_Client;
+use Google_Service_Sheets;
 
 class FetchGoogleSheetCommentsAction
 {
-    private \Google_Client $client;
+    private Google_Service_Sheets $service;
 
     public function __construct()
     {
-        $this->client = new \Google_Client();
+        $client = new Google_Client();
+        $client->setApplicationName('Laravel Google Table Sync');
+        $client->setScopes([Google_Service_Sheets::SPREADSHEETS]);
+        $client->setAuthConfig(storage_path('app/google/credentials.json'));
+        $client->setAccessType('offline');
+        $this->service = new Google_Service_Sheets($client);
     }
 
     /**
@@ -49,15 +56,6 @@ class FetchGoogleSheetCommentsAction
         return $result;
     }
 
-    private function getSheetService(): \Google_Service_Sheets
-    {
-        $this->client->setApplicationName('Laravel Google Table Sync');
-        $this->client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
-        $this->client->setAuthConfig(storage_path('app/google/credentials.json'));
-        $this->client->setAccessType('offline');
-        return new \Google_Service_Sheets($this->client);
-    }
-
     private function getSheetIdFromUrl(string $url): ?string
     {
         if (preg_match('/\/d\/([a-zA-Z0-9-_]+)/', $url, $matches)) {
@@ -73,12 +71,11 @@ class FetchGoogleSheetCommentsAction
      */
     private function getRows(string $spreadsheetId, string $range): array
     {
-        $service = $this->getSheetService();
-        $response = $service->spreadsheets_values->get($spreadsheetId, $range);
+        $response = $this->service->spreadsheets_values->get($spreadsheetId, $range);
         $values = $response->getValues();
         if ($values === null) {
             return [];
         }
         return $values;
     }
-} 
+}

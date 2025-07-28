@@ -4,15 +4,24 @@ namespace App\Actions;
 
 use App\DTO\GoogleSheetSyncDto;
 use App\Models\Setting;
+use Google_Client;
 use Google_Service_Sheets;
+use Google_Service_Sheets_ClearValuesRequest;
+use Google_Service_Sheets_ValueRange;
 
 class SyncGoogleSheetAction
 {
-    private \Google_Client $client;
+
+    private Google_Service_Sheets $service;
 
     public function __construct()
     {
-        $this->client = new \Google_Client();
+        $client = new Google_Client();
+        $client->setApplicationName('Laravel Google Table Sync');
+        $client->setScopes([Google_Service_Sheets::SPREADSHEETS]);
+        $client->setAuthConfig(storage_path('app/google/credentials.json'));
+        $client->setAccessType('offline');
+        $this->service = new Google_Service_Sheets($client);
     }
 
     public function execute(GoogleSheetSyncDto $dto): bool
@@ -23,7 +32,6 @@ class SyncGoogleSheetAction
         }
         $spreadsheetId = $this->getSheetIdFromUrl($sheetUrl);
         $range = 'A1:Z';
-        $service = $this->getSheetService();
 
         // Формируем новые строки для выгрузки
         $header = ['ID', 'Text', 'Status', 'Created At', 'Updated At', 'Комментарий'];
@@ -39,18 +47,9 @@ class SyncGoogleSheetAction
             ];
             $newRows[] = $row;
         }
-        $this->clearRange($service, $spreadsheetId, $range);
-        $this->writeRows($service, $spreadsheetId, $range, $newRows);
+        $this->clearRange($spreadsheetId, $range);
+        $this->writeRows($spreadsheetId, $range, $newRows);
         return true;
-    }
-
-    private function getSheetService(): Google_Service_Sheets
-    {
-        $this->client->setApplicationName('Laravel Google Table Sync');
-        $this->client->setScopes([Google_Service_Sheets::SPREADSHEETS]);
-        $this->client->setAuthConfig(storage_path('app/google/credentials.json'));
-        $this->client->setAccessType('offline');
-        return new Google_Service_Sheets($this->client);
     }
 
     private function getSheetIdFromUrl(string $url): ?string
@@ -61,18 +60,17 @@ class SyncGoogleSheetAction
         return null;
     }
 
-
-    private function writeRows(\Google_Service_Sheets $service, string $spreadsheetId, string $range, array $values): mixed
+    private function writeRows(string $spreadsheetId, string $range, array $values): mixed
     {
-        $body = new \Google_Service_Sheets_ValueRange([
+        $body = new Google_Service_Sheets_ValueRange([
             'values' => $values
         ]);
         $params = ['valueInputOption' => 'RAW'];
-        return $service->spreadsheets_values->update($spreadsheetId, $range, $body, $params);
+        return $this->service->spreadsheets_values->update($spreadsheetId, $range, $body, $params);
     }
 
-    private function clearRange(\Google_Service_Sheets $service, string $spreadsheetId, string $range): void
+    private function clearRange(string $spreadsheetId, string $range): void
     {
-        $service->spreadsheets_values->clear($spreadsheetId, $range, new \Google_Service_Sheets_ClearValuesRequest());
+        $this->service->spreadsheets_values->clear($spreadsheetId, $range, new Google_Service_Sheets_ClearValuesRequest());
     }
 }

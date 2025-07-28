@@ -107,11 +107,14 @@ php artisan migrate
 6. Запуск команд вручную
 Выгрузка в google-таблицу:
 В контейнере запускаем:
+Шэдулер:
+php artisan schedule:run
+Команда:
 php artisan app:sync-google-sheet
 
 Вытянуть из google-таблицы:
 В контейнере запускаем:
-php artisan app:sync-google-sheet
+php artisan app:fetch-google-sheet-comments
 
 ## Страница приложения
 ![img.png](img.png)
